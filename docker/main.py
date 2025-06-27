@@ -56,11 +56,10 @@ def get_ssh_config(dc_name):
         'host': os.getenv(f"{prefix}HOST"),
         'port': int(os.getenv(f"{prefix}PORT", "22")),
         'username': os.getenv(f"{prefix}USERNAME"),
-        'password': os.getenv(f"{prefix}PASSWORD"),
-        'key': os.getenv(f"{prefix}KEY_PATH"),
+        'password': os.getenv(f"{prefix}PASSWORD")
     }
 
-def check_service(url, max_attempts=3, retry_delay=1):
+def check_service(pair, url, max_attempts=3, retry_delay=1):
     """
     Проверка доступности сервиса HTTP запросом
     с несколькими попытками перед признанием недоступности
@@ -73,10 +72,10 @@ def check_service(url, max_attempts=3, retry_delay=1):
             
             if response.ok:
                 return True, elapsed, attempt
-                
-            logger.warning(f"Попытка {attempt}/{max_attempts}: {url} вернул код {response.status_code}")
+
+            logger.warning(f"Попытка {attempt}/{max_attempts}: {pair[0]}-{pair[1]} {url} вернул код {response.status_code}")
         except Exception as e:
-            logger.warning(f"Попытка {attempt}/{max_attempts}: Ошибка подключения к {url}: {str(e)}")
+            logger.warning(f"Попытка {attempt}/{max_attempts}: {pair[0]}-{pair[1]} Ошибка подключения к {url}: {str(e)}")
         
         # Задержка перед следующей попыткой, если это не последняя попытка
         if attempt < max_attempts:
@@ -227,6 +226,7 @@ def main():
             
             # Выполняем проверку сервиса с несколькими попытками
             is_available, response_time, attempts_made = check_service(
+                pair,
                 url, 
                 max_attempts=check_attempts,
                 retry_delay=check_retry_delay
@@ -281,7 +281,7 @@ def main():
                     
                     # Логирование результата выполнения
                     exec_result = "успешно" if success else "с ошибкой"
-                    logger.info(f"Команда выполнена {exec_result} на {dc} (Попытка восстановления #{attempt_counters[pair]})")
+                    logger.info(f"Команда выполнена {exec_result} на {dc} (Попытка восстановления #{attempt_counters[pair]}), {output}")
                 
                 # Применяем exponential backoff с настраиваемым множителем
                 new_interval = min(current_intervals[pair] * backoff_factor, max_interval)
