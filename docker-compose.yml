@@ -1,7 +1,12 @@
 services:
-  bot:
+  monitor:
     build: ./docker
     restart: always
     env_file: ".env"
     volumes:
       - ./logs/:/var/log/vpn-monitor/
+  webserver:
+    image: nginx:latest
+    ports:
+      - "52421:80"
+    restart: always
