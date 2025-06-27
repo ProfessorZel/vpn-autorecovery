@@ -12,7 +12,7 @@ import datetime
 load_dotenv()
 
 # Настройка логирования
-log_file = os.getenv("LOG_FILE", "monitor.log")
+log_file = os.getenv("LOG_FILE", "../monitor.log")
 log_success = os.getenv("LOG_SUCCESS_REQUESTS", "false").lower() == "true"
 log_max_size = int(os.getenv("LOG_MAX_SIZE", "10"))  # в MB
 log_backup_count = int(os.getenv("LOG_BACKUP_COUNT", "3"))
@@ -71,7 +71,7 @@ def check_service(url, max_attempts=3, retry_delay=1):
             response = requests.get(url, timeout=10)
             elapsed = round((time.time() - start_time) * 1000, 2)
             
-            if response.status_code == 200:
+            if response.ok:
                 return True, elapsed, attempt
                 
             logger.warning(f"Попытка {attempt}/{max_attempts}: {url} вернул код {response.status_code}")
@@ -313,7 +313,7 @@ def main():
             next_checks[pair] = current_time + current_intervals[pair]
         
         # Пауза перед следующей итерацией
-        time.sleep(1)
+        time.sleep(5)
 
 if __name__ == "__main__":
     main()
